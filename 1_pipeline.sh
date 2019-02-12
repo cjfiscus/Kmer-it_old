@@ -3,9 +3,9 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
 #SBATCH --mem=40G
-#SBATCH --output=std/pl%j.stdout
-#SBATCH --error=std/pl%j.stderr
-#SBATCH --mail-user=cfisc004@ucr.edu
+#SBATCH --output=pl%j.stdout
+#SBATCH --error=pl%j.stderr
+#SBATCH --mail-user=jnguy169@ucr.edu
 #SBATCH --mail-type=ALL
 #SBATCH --job-name="pl"
 #SBATCH -p batch
@@ -43,25 +43,53 @@ cd $WORKINGDIR # cd to working directory
 FILE=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f2)
 
 # determine filenames
+
+
+
+
+
+#------------------------------------------------------------------------------------------------------------------------
 # FILE1 is forward read if paired end, FILE2 is reverse read
-for i in $(seq 1 $(echo $FILE | tr ";" "\n" | wc -l))
+for i in $(seq 1 $(echo $FILE | tr ";" "\n" | wc -l))      
 do
         declare "FILE$i"=$(basename $(echo $FILE | tr ";" "\n" | head -n "$i" | tail -n 1))
 done
+#------------------------------------------------------------------------------------------------------------------------
+
+
 
 # determine sample name
-NAME=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f1)
+NAME=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f1)                    
 
 # define temporary directory
 TEMP_DIR=/scratch/cfisc004/$NAME
 
 # check if library is single end or paired end  
-if [[ "$FILE" == *";"* ]] ; then
-	LIBTYPE="PE" # paired end 
-else
-	LIBTYPE="SE" # single end 
+#if [[ "$FILE" == *";"* ]] ; then
+#	LIBTYPE="PE" # paired end 
+#else
+#	LIBTYPE="SE" # single end 
+#fi# 
+
+
+#--------------------------------------------------------
+
+#Johnny's libary check for single end or paired ends
+
+ftp2=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f3) 
+
+if $[ "$ftp2" == "" ]; then
+	LIBTYPE="SE"
+	
 fi
 
+
+
+
+
+
+
+#--------------------------------------------------------
 # make temp directory
 mkdir -pv "$TEMP_DIR"
 

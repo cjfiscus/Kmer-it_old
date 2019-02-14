@@ -5,7 +5,7 @@
 #SBATCH --mem=16G
 #SBATCH --output=pl%j.stdout
 #SBATCH --error=pl%j.stderr
-#SBATCH --mail-user=jnguy169@ucr.edu
+#SBATCH --mail-user=
 #SBATCH --mail-type=ALL
 #SBATCH --job-name="pl"
 #SBATCH -p koeniglab
@@ -57,18 +57,28 @@ echo "$NAME"
 
 #Johnny's libary check for single end or paired ends
 
+
+
+
 ftp2=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f3) 
 
-if $[ "$ftp2" == "" ]; then
+LIBTYPE="PE"
+
+if [ "$ftp2" == "" ]; then    							#DEFINE LIBTYPE -> SE OR PE
 	LIBTYPE="SE"
-	
 fi
 
 echo "$LIBTYPE"
 
 
+FTP1=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f2)           # DEFINE FTP1 and FPT2(if exist) current file field aka FILE TRANFER PROTOCOL 
 
+if [ "$LIBTYPE" == "PE" ]; then                                                 
+	FTP2=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f3)
+fi
 
+echo "$FTP1"
+echo "$FTP2"
 
 #--------------------------------------------------------
 # make temp directory
@@ -81,6 +91,22 @@ echo "$LIBTYPE"
 ####	do
 ####		wget -nv -P $TEMP_DIR "$i"
 ####	done
+
+if [ "$LIBTYPE" == "PE" ]; then 
+	wget -nv "$FTP2"
+fi
+
+wget -nv "$FTP1"
+
+
+
+
+
+
+
+
+
+
 
 	# Quality/Adapter trimming with Trimmomatic 
 #	java -jar $TRIMMOMATIC PE -threads 8 \

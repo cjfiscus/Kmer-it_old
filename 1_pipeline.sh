@@ -48,16 +48,29 @@ ftp2=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f3)
 
 LIBTYPE="PE"
 
-if [ "$ftp2" == "" ]; then    							#DEFINE LIBTYPE -> SE OR PE
+if [ "$ftp2" == "NA" ]; then    						#DEFINE LIBTYPE -> SE OR PE
 	LIBTYPE="SE"
 fi
 
 FTP1=$(head -n $SLURM_ARRAY_TASK_ID $SEQLIST | tail -n 1 | cut -f2)           # DEFINE FTP1 and FPT2(if exist)  
-
+        #####
+	if wget --spider "$FTP1" 2>/dev/null; then
+	else
+		exit 1
+	fi
+	#####			    
 if [ "$LIBTYPE" == "PE" ]; then                                                 
-	FTP2="$ftp2"
-fi
-#---------------------------------------------------------------------
+
+	#####	
+	if wget --spider "$ftp2" 2>/dev/null; then
+	else
+            exit 1
+	fi
+	####
+
+	FTP2="$ftp2"							#FTP1 LINKS HERE are good links. FTP2 are either "NA" or good links.
+fi									#(there should be no "garabge" or broken link here onwards) 	
+#---------------------------------------------------------------------  # ( as long as ftp exist it gets through! )
 # make temp directory
 mkdir -pv "$TEMP_DIR"
 #### ok issue with temp dir here do i needa make a new dir? 
@@ -66,9 +79,11 @@ FILE1=$(basename "$FTP1")
 FILE2=$(basename "$FTP2") #note to self do i need a if to check if FTP2 exist or nah? crash or nah
 
 if [ "$LIBTYPE" == "PE" ]; then 
-	wget -nv "$FTP2"
+	wget -nv "$FTP2" & wget -nv "$FTP1"
+else 
+	wget -nv "$FTP1"                                                        # download ftp1 and ftp2 
+
 fi
-wget -nv "$FTP1"                                                        # download ftp1 and ftp2 / ALSO locate the filename! via File#
 
 #-----------------------------------------------------------------------
 #### TO DO #####

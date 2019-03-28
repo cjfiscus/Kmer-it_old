@@ -1,13 +1,12 @@
 # Kmer-it
-A pipeline for counting K-mers from high-throughput sequencing reads. Currently configured to run on CentOS and slurm queueing system. 
+A pipeline for counting K-mers from high-throughput sequencing reads. 
 
 ## Dependencies
-#### wget
-#### samtools 1.8
-#### trimmomatic 0.36
-#### bedtools 2.27.0
-#### jellyfish 2.2.29
-#### bwa 0.7.17
+#### [hstlib/samtools 1.9](https://github.com/samtools/samtools)
+#### [trimmomatic 0.36](http://www.usadellab.org/cms/index.php?page=trimmomatic)
+#### [bedtools 2.28.0](https://github.com/arq5x/bedtools2)
+#### [jellyfish 2.2.29](https://github.com/gmarcais/Jellyfish)
+#### [bwa 0.7.17](https://github.com/lh3/bwa)
 
 ## Usage
 
@@ -15,9 +14,7 @@ A pipeline for counting K-mers from high-throughput sequencing reads. Currently 
 
 ## TODO
  [ ] Add additional column in test file for identifier  
- [ ] Check that all identifers are unique  
  [ ] Add in NA check for FTP2  
  [ ] Add assembly step  
  [ ] Report % aligning to genome  
- [ ] Move all options to a params file  
  [ ] Write second script to combine samples  

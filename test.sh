@@ -1,19 +1,13 @@
-#!/bin/bash 
+#!/bin/bash -l
 
-A="value" 
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --mem=16G
+#SBATCH --output=%j.stdout
+#SBATCH --error=%j.stderr
+#SBATCH --mail-user=
+#SBATCH --mail-type=ALL
+#SBATCH --job-name="test"
+#SBATCH -p koeniglab
 
-echo $A
-
-# checking if variable is empty
-if [ -z "$A" ] ; then 
-	echo "empty"  
-else
-	echo "has a value"
-fi
-
-temp=$(basename $(mktemp))
-echo "$temp"
-
-sample="sample1"
-outputfile="$sample""$temp"
-echo "$outputfile"
+axel ftp.sra.ebi.ac.uk/vol1/fastq/SRR194/007/SRR1945447/SRR1945447.fastq.gz -o ./temp/470.1/470.1.fastq.gz  

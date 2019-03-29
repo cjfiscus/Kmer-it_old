@@ -1,7 +1,7 @@
 ## Kmer-it Parameters
 
 # list of sequences to use
-SEQ_LIST=./sample.txt
+SEQ_LIST=/rhome/cfisc004/bigdata/projects/Kmer-it/sample.txt
 
 # threads to use
 THREADS=2
@@ -13,7 +13,7 @@ TEMP_DIR=./temp
 RM_TEMP_DIR=yes
 
 # results directory
-OUT_DIR=./results
+OUT_DIR=/rhome/cfisc004/bigdata/projects/Kmer-it/results
 
 # trimming options
 RUN_TRIM=yes

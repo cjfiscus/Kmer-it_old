@@ -6,14 +6,14 @@
 
 ##### PIPELINE #####
 # read in arguments from params file
-source ./params
+source $1
 
 # determine sample name
-NAME=$(head -n "$1" "$SEQ_LIST" | tail -n 1 | cut -f1)
+NAME=$(head -n "$2" "$SEQ_LIST" | tail -n 1 | cut -f1)
 echo "$NAME"
 
 # determine if seq run is SE or PE
-FILE=$(head -n "$1" "$SEQ_LIST" | tail -n 1 | cut -f3)
+FILE=$(head -n "$2" "$SEQ_LIST" | tail -n 1 | cut -f3)
 echo "$FILE"
 
 if [[ "$FILE" == *";"* ]] ; then
@@ -90,7 +90,7 @@ then # paired end
 	else
 		# map to reference genome
 		echo "mapping to genome with bwa..."
-		bwa mem -t 8 -M $REF_GENOME "$NAME"_1_trimmed_paired.fq.gz \
+		bwa mem -t "$THREADS" -M $REF_GENOME "$NAME"_1_trimmed_paired.fq.gz \
 			"$NAME"_2_trimmed_paired.fq.gz > "$NAME"_gen.sam
 
 	fi
@@ -103,8 +103,8 @@ then # paired end
 	else
 		# map to organellar genome
 		echo "mapping to organellar genome with bwa..."
-		bwa mem -t 8 -M $O_GENOME "$NAME"_1_trimmed_paired.fq.gz \
-			"$NAME"_2_trimmed_paired.fq.gz > $TEMP_DIR/"$NAME"_org.sam
+		bwa mem -t "$THREADS" -M $O_GENOME "$NAME"_1_trimmed_paired.fq.gz \
+			"$NAME"_2_trimmed_paired.fq.gz > "$NAME"_org.sam
 	fi
 
 else # single end 
@@ -152,7 +152,7 @@ else # single end
 	else
 		# map to reference genome
 		echo "mapping to genome with bwa..."
-		bwa mem -t 8 -M $REF_GENOME "$NAME"_trimmed.fq.gz  > "$NAME"_gen.sam
+		bwa mem -t "$THREADS" -M $REF_GENOME "$NAME"_trimmed.fq.gz  > "$NAME"_gen.sam
 	fi 
 
 	if [ -z "$O_GENOME" ]
@@ -162,7 +162,7 @@ else # single end
 	else 
 		# map to organellar genome
 		echo "mapping to organellar genome with bwa..."
-		bwa mem -t 8 -M $O_GENOME "$NAME"_trimmed.fq.gz  > "$NAME"_org.sam
+		bwa mem -t "$THREADS" -M $O_GENOME "$NAME"_trimmed.fq.gz  > "$NAME"_org.sam
 
 	fi 
 fi
@@ -194,7 +194,5 @@ fi
 
 # Count K-mers in reads that did not map to organelles 
 echo "counting K-mers with jellyfish"
-jellyfish count -C -m "$K" -s 3G -t "$THREADS" -o "$NAME".jf "$NAME".unmapped.fq 
+jellyfish count -C -m "$K" -s 500M -t "$THREADS" -o "$NAME".jf "$NAME".unmapped.fq 
 jellyfish dump -tc "$NAME".jf > $OUT_DIR/"$NAME".txt
-
-

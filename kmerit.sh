@@ -43,7 +43,8 @@ then # paired end
 
 	# check MD5sums
 	INDEX=1
-	MD5SUMS=$(head -n "$1" "$SEQ_LIST" | tail -n 1 | cut -f4)
+	MD5SUMS=$(head -n "$2" "$SEQ_LIST" | tail -n 1 | cut -f4)
+	echo "$MD5SUMS"
 	if [ -z "$MD5SUMS" ]
 	then 
 		echo "skipping MD5sum check..."
@@ -93,6 +94,27 @@ then # paired end
 		bwa mem -t "$THREADS" -M $REF_GENOME "$NAME"_1_trimmed_paired.fq.gz \
 			"$NAME"_2_trimmed_paired.fq.gz > "$NAME"_gen.sam
 
+		if [[ $REP_ASSEM = "yes"]]
+		then 
+			# calculate insert size metrics
+        		java -jar $PICARD CollectInsertSizeMetrics \
+        		I="$NAME"_gen.sam \
+        		O="$OUT_DIR"/"$NAME"_metrics.txt \
+        		H="$NAME"_histogram.pdf \
+        		M=0.5
+
+			# parse insert size matrics
+       			MEAN_INSERT_SIZE=$(head -n 8 "$OUT_DIR"/"$NAME"_metrics.txt | tail -n 1 | cut -f6)
+        		STD_INSERT_SIZE=$(head -n 8 "$OUT_DIR"/"$NAME"_metrics.txt | tail -n 1 | cut -f7)
+
+        		# prepare REPdenovo inputs
+        		touch reads
+        		echo "$NAME"_1.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
+        		echo "$NAME"_2.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
+        
+        		LEN=$(head -n2 sample1.fq | tail -n 1 | wc -m | awk '{print $1 - 1}')
+
+		fi 
 	fi
 
 	if [ -z "$O_GENOME" ]
@@ -114,7 +136,7 @@ else # single end
 	#wget "$FILE" -O "$NAME".fastq.gz
 	
 	# check MD5sum
-	MD5SUMS=$(head -n "$1" $SEQ_LIST | tail -n 1 | cut -f4)
+	MD5SUMS=$(head -n "$2" $SEQ_LIST | tail -n 1 | cut -f4)
 	if [ -z "$MD5SUMS" ]
 	then 
 		echo "skipping MD5sum check..."
@@ -141,7 +163,7 @@ else # single end
 		ILLUMINACLIP:"$ADAPTERSSE":2:30:10 \
 		LEADING:5 TRAILING:5 SLIDINGWINDOW:4:20 MINLEN:36
 
-	#else
+	else
 		echo "skipping trimming..."
 		mv "$NAME".fastq.gz "$NAME"_trimmed.fq.gz
 	fi
@@ -153,6 +175,13 @@ else # single end
 		# map to reference genome
 		echo "mapping to genome with bwa..."
 		bwa mem -t "$THREADS" -M $REF_GENOME "$NAME"_trimmed.fq.gz  > "$NAME"_gen.sam
+	fi 
+
+	if [[ $REP_ASSEM = "yes" ]]
+	then 
+		touch reads
+		echo "$NAME".fastq.gz -1 -1 -1 >> reads
+		LEN=$(zless "$NAME".fastq.gz | head -n2 | tail -n 1 | wc -m | awk '{print $1 - 1}')
 	fi 
 
 	if [ -z "$O_GENOME" ]
@@ -189,10 +218,29 @@ samtools view -f4 -b "$NAME"_org.bam > "$NAME".unmapped.bam
 
 # export these unmapped reads
 bedtools bamtofastq -i "$NAME".unmapped.bam -fq "$NAME".unmapped.fq
-
 fi
 
 # Count K-mers in reads that did not map to organelles 
 echo "counting K-mers with jellyfish"
 jellyfish count -C -m "$K" -s 500M -t "$THREADS" -o "$NAME".jf "$NAME".unmapped.fq 
-jellyfish dump -tc "$NAME".jf > $OUT_DIR/"$NAME".txt
+jellyfish dump -tc "$NAME".jf | gzip > $OUT_DIR/"$NAME".txt.gz
+
+# Repeat Assembly with REPdenovo
+if [[ $REP_ASSEM = "yes" ]]
+then 
+	echo "assembling repeats with REPdenovo"
+	# make config file for REPdenovo
+	touch configure
+	head -n 7 "$REP_CONFIG" >> configure
+	echo READ_LENGTH "$LEN" >> configure
+	tail -n+9 "$REP_CONFIG" >> configure
+	echo "OUTPUT_FOLDER $TEMP_DIR" >> configure
+	echo "VERBOSE 1" >> configure
+
+	# Run REPdenovo pipeline
+	python "$REPDENOVO" -c All -g configure -r reads
+
+	# save results
+	gzip contigs.fa
+	mv contigs.fa.gz "$OUT_DIR"/"$NAME"_contigs.fa.gz
+fi 

@@ -27,7 +27,9 @@ REF_GENOME=/rhome/cfisc004/bigdata/projects/K-mers_Arabidopsis/data/reference/Ar
 O_GENOME=/rhome/cfisc004/bigdata/projects/K-mers_Arabidopsis/data/reference/Arabidopsis_thaliana.TAIR10.Mt.Pt.fa
 
 # kmer to count
-K=5
+K=12
 
 # do repeat assembly
 REP_ASSEM=yes
+REPDENOVO=/rhome/cfisc004/software/REPdenovo/main.py
+REP_CONFIG=./configure

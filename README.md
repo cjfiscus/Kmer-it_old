@@ -11,6 +11,7 @@ Pipeline steps:
 6. Calculate coverage with mosdepth (if reference genome is provided).
 7. Extract unmapped reads (if organelle genome is provided)
 8. Count K-mers with jellyfish. 
+9. Repeat assembly with REPdenovo (reference genome must be provided). 
 
 ## Dependencies
 #### [axel 2.16.1](https://github.com/axel-download-accelerator/axel)
@@ -19,6 +20,7 @@ Pipeline steps:
 #### [bedtools 2.28.0](https://github.com/arq5x/bedtools2)
 #### [jellyfish 2.2.29](https://github.com/gmarcais/Jellyfish)
 #### [bwa 0.7.17](https://github.com/lh3/bwa)
+#### [REPdenovo](https://github.com/Reedwarbler/REPdenovo)
 
 ## Inputs
 ### Parameter file
@@ -37,6 +39,8 @@ REF_GENOME: Path to reference genome. Leave blank to skip mapping to reference g
 O_GENOME: Path to organellar genome (mitochondria and/or plastid genomes). Leave blank to skip mapping to organellar genome. 
 K: Kmer to count (must be integer). 
 REP_ASSEM: Set to yes to do repeat assembly with REPdenovo. 
+REPDENOVO: Path to REPdenovo script (main.py). 
+REP_CONFIG: Path to REPdenovo configuration file. 
 
 ### Sample file
 Kmer-it requires a file describing the samples to process. Each sequencing run is described on one line. The file must be tab-delimited and contain the following columns (in order):
@@ -47,7 +51,6 @@ ID: unique id for each sequencing run.
 SAMPLE: sample name. Must be identical for counts from multiple runs to be aggregated.   
 FTP: FTP link(s) for file download. Paired-end reads must be contained in separate files and are separated by ";".   
 MD5: MD5SUMS for file(s) described in FTP field. If no MD5SUMS are provided this step will be skipped.  
-
 
 ## Usage
 Running Kmer-it consists of two steps. 
@@ -66,5 +69,3 @@ sh combine.sh
 The following files are created:
 
 ## TODO
- [ ] Add assembly step  
- [ ] Report % aligning to genome  

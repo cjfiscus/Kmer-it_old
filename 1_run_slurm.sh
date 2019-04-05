@@ -5,7 +5,7 @@
 #SBATCH --mem=16G
 #SBATCH --output=%j.stdout
 #SBATCH --error=%j.stderr
-#SBATCH --mail-user=
+#SBATCH --mail-user=cfisc004@ucr.edu
 #SBATCH --mail-type=ALL
 #SBATCH --job-name="test"
 #SBATCH -p koeniglab
@@ -17,5 +17,10 @@
 # load required modules (slurm)
 module load trimmomatic/0.36 jellyfish/2.2.9 samtools/1.9 bwa/0.7.17
 
+# set python environment (for mosdepth)
+module unload miniconda2
+module load anaconda3
+source activate PyEnv3
+
 # run software
-sh kmerit.sh params "$SLURM_ARRAY_TASK_ID"
+sh kmerit.sh ./params "$SLURM_ARRAY_TASK_ID"

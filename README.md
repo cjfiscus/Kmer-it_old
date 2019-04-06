@@ -69,3 +69,5 @@ sh combine.sh
 The following files are created:
 
 ## TODO
+[ ] Remove temp directory switch
+[ ] Test repeat assembly

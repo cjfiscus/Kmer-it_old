@@ -93,29 +93,29 @@ then # paired end
 		echo "mapping to genome with bwa..."
 		bwa mem -t "$THREADS" -M $REF_GENOME "$NAME"_1_trimmed_paired.fq.gz \
 			"$NAME"_2_trimmed_paired.fq.gz > "$NAME"_gen.sam
+	fi 
+		
+	if [[ $REP_ASSEM = "yes" ]]
+	then 
+		# calculate insert size metrics
+        	java -jar $PICARD CollectInsertSizeMetrics \
+        	I="$NAME"_gen.sam \
+        	O="$OUT_DIR"/"$NAME"_metrics.txt \
+        	H="$NAME"_histogram.pdf \
+        	M=0.5
 
-		if [[ $REP_ASSEM = "yes"]]
-		then 
-			# calculate insert size metrics
-        		java -jar $PICARD CollectInsertSizeMetrics \
-        		I="$NAME"_gen.sam \
-        		O="$OUT_DIR"/"$NAME"_metrics.txt \
-        		H="$NAME"_histogram.pdf \
-        		M=0.5
+		# parse insert size matrics
+       		MEAN_INSERT_SIZE=$(head -n 8 "$OUT_DIR"/"$NAME"_metrics.txt | tail -n 1 | cut -f6)
+        	STD_INSERT_SIZE=$(head -n 8 "$OUT_DIR"/"$NAME"_metrics.txt | tail -n 1 | cut -f7)
 
-			# parse insert size matrics
-       			MEAN_INSERT_SIZE=$(head -n 8 "$OUT_DIR"/"$NAME"_metrics.txt | tail -n 1 | cut -f6)
-        		STD_INSERT_SIZE=$(head -n 8 "$OUT_DIR"/"$NAME"_metrics.txt | tail -n 1 | cut -f7)
-
-        		# prepare REPdenovo inputs
-        		touch reads
-        		echo "$NAME"_1.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
-        		echo "$NAME"_2.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
+        	# prepare REPdenovo inputs
+        	touch reads
+        	echo "$NAME"_1.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
+        	echo "$NAME"_2.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
         
-        		LEN=$(head -n2 sample1.fq | tail -n 1 | wc -m | awk '{print $1 - 1}')
+        	LEN=$(head -n2 sample1.fq | tail -n 1 | wc -m | awk '{print $1 - 1}')
 
-		fi 
-	fi
+	fi 
 
 	if [ -z "$O_GENOME" ]
 	then 

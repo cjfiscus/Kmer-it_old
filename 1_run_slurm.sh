@@ -15,7 +15,7 @@
 #samtools 1.8; trimmomatic 0.36; bedtools 2.27.0; jellyfish 2.2.9; bwa 0.7.17
 
 # load required modules (slurm)
-module load trimmomatic/0.36 jellyfish/2.2.9 samtools/1.9 bwa/0.7.17
+module load trimmomatic/0.36 jellyfish/2.2.9 samtools/1.9 bwa/0.7.17 picard/2.18.3
 
 # set python environment (for mosdepth)
 module unload miniconda2

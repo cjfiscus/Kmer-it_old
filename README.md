@@ -1,5 +1,6 @@
 # Kmer-it
 A pipeline for counting K-mers from high-throughput sequencing reads.  
+
 This pipeline is designed to count k-mers from reads originating from nuclear genomes. Reads originating from organellar genomes are filtered by mapping all reads to supplied organellar genome(s) and only counting k-mers in unmapped reads.  
 
 Pipeline steps: 
@@ -27,20 +28,20 @@ Pipeline steps:
 Kmer-it requires a parameter file specifying runtime options.  
 
 #### Variables 
-SEQ_LIST: Path to list of sequencing runs to process through the pipeline (see Sample file section below).  
-THREADS: Number of threads to use for multi-threaded steps (must be integer). 
-TEMP_DIR: Path to a temporary directory
-RM_TEMP_DIR: Set to yes to remove temporary directory at conclusion of pipeline. 
-OUT_DIR: Directory where results will be stored. 
-RUN_TRIM: Set to yes to run trimmomatic step. 
-ADAPTERSPE: Path to file containing paired-end adapters. 
-ADAPTERSSE: Path to file containing single-end adapters. 
-REF_GENOME: Path to reference genome. Leave blank to skip mapping to reference genome. 
-O_GENOME: Path to organellar genome (mitochondria and/or plastid genomes). Leave blank to skip mapping to organellar genome. 
-K: Kmer to count (must be integer). 
-REP_ASSEM: Set to yes to do repeat assembly with REPdenovo. 
-REPDENOVO: Path to REPdenovo script (main.py). 
-REP_CONFIG: Path to REPdenovo configuration file. 
+SEQ_LIST: Path to list of sequencing runs to process through the pipeline (see Sample file section below).    
+THREADS: Number of threads to use for multi-threaded steps (must be integer).  
+TEMP_DIR: Path to a temporary directory.  
+RM_TEMP_DIR: Set to yes to remove temporary directory at conclusion of pipeline.   
+OUT_DIR: Directory where results will be stored.  
+RUN_TRIM: Set to yes to run trimmomatic step.  
+ADAPTERSPE: Path to file containing paired-end adapters.   
+ADAPTERSSE: Path to file containing single-end adapters.  
+REF_GENOME: Path to reference genome. Leave blank to skip mapping to reference genome.  
+O_GENOME: Path to organellar genome (mitochondria and/or plastid genomes). Leave blank to skip mapping to organellar genome.  
+K: Kmer to count (must be integer).  
+REP_ASSEM: Set to yes to do repeat assembly with REPdenovo.  
+REPDENOVO: Path to REPdenovo script (main.py).  
+REP_CONFIG: Path to REPdenovo configuration file.  
 
 ### Sample file
 Kmer-it requires a file describing the samples to process. Each sequencing run is described on one line. The file must be tab-delimited and contain the following columns (in order):

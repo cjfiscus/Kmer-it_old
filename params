@@ -32,4 +32,4 @@ K=12
 # do repeat assembly
 REP_ASSEM=yes
 REPDENOVO=/rhome/cfisc004/software/REPdenovo/main.py
-REP_CONFIG=./configure
+REP_CONFIG=/rhome/cfisc004/bigdata/projects/Kmer-it/configure

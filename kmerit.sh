@@ -36,7 +36,7 @@ then # paired end
 	for i in $(echo $FILE | tr ";" "\n")
 	do	
 		echo "downloading" "$i" 
-		axel -n "$THREADS" "$i" -o "$NAME"_"$INDEX".fastq.gz
+		#axel -n "$THREADS" "$i" -o "$NAME"_"$INDEX".fastq.gz
 		#wget "$i" -O "$NAME"_"$INDEX".fastq.gz
 		INDEX=$((INDEX + 1))
 	done
@@ -132,7 +132,7 @@ then # paired end
 else # single end 
 	# Download file
 	echo "downloading" "$FILE"	
-	axel -n "$THREADS" "$FILE" -o "$NAME".fastq.gz
+	#axel -n "$THREADS" "$FILE" -o "$NAME".fastq.gz
 	#wget "$FILE" -O "$NAME".fastq.gz
 	
 	# check MD5sum
@@ -234,7 +234,7 @@ then
 	head -n 7 "$REP_CONFIG" >> configure
 	echo READ_LENGTH "$LEN" >> configure
 	tail -n+9 "$REP_CONFIG" >> configure
-	echo "OUTPUT_FOLDER $TEMP_DIR" >> configure
+	echo "OUTPUT_FOLDER ./" >> configure
 	echo "VERBOSE 1" >> configure
 
 	# Run REPdenovo pipeline

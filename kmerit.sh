@@ -36,7 +36,7 @@ then # paired end
 	for i in $(echo $FILE | tr ";" "\n")
 	do	
 		echo "downloading" "$i" 
-		#axel -n "$THREADS" "$i" -o "$NAME"_"$INDEX".fastq.gz
+		axel -n "$THREADS" "$i" -o "$NAME"_"$INDEX".fastq.gz
 		#wget "$i" -O "$NAME"_"$INDEX".fastq.gz
 		INDEX=$((INDEX + 1))
 	done
@@ -113,7 +113,7 @@ then # paired end
         	echo "$NAME"_1.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
         	echo "$NAME"_2.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
         
-        	LEN=$(head -n2 sample1.fq | tail -n 1 | wc -m | awk '{print $1 - 1}')
+        	LEN=$(zless "$NAME"_1_trimmed_paired.fq.gz | head -n2 | tail -n 1 | wc -m | awk '{print $1 - 1}')
 
 	fi 
 
@@ -132,7 +132,7 @@ then # paired end
 else # single end 
 	# Download file
 	echo "downloading" "$FILE"	
-	#axel -n "$THREADS" "$FILE" -o "$NAME".fastq.gz
+	axel -n "$THREADS" "$FILE" -o "$NAME".fastq.gz
 	#wget "$FILE" -O "$NAME".fastq.gz
 	
 	# check MD5sum
@@ -238,9 +238,15 @@ then
 	echo "VERBOSE 1" >> configure
 
 	# Run REPdenovo pipeline
-	python "$REPDENOVO" -c All -g configure -r reads
+	python2 "$REPDENOVO" -c All -g configure -r reads
 
 	# save results
 	gzip contigs.fa
 	mv contigs.fa.gz "$OUT_DIR"/"$NAME"_contigs.fa.gz
-fi 
+fi
+
+# Delete temp folder (if enabled)
+if [[ $RM_TEMP_DIR = "yes" ]]
+then 
+	rm -r "$TEMP_DIR"
+fi

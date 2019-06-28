@@ -26,8 +26,15 @@ fi
 
 # work in temp directory
 TEMP_DIR="$TEMP_DIR"/"$NAME"
-mkdir "$TEMP_DIR"
+mkdir -p "$TEMP_DIR"
 cd "$TEMP_DIR"
+
+# prepare output directories
+mkdir -p "$OUT_DIR"/assemblies
+mkdir -p "$OUT_DIR"/kmer_counts
+mkdir -p "$OUT_DIR"/coverage
+mkdir -p "$OUT_DIR"/other
+mkdir -p "$OUT_DIR"/other/mapstats
 
 if [ $LIBTYPE == "PE" ]
 then # paired end 
@@ -36,8 +43,8 @@ then # paired end
 	for i in $(echo $FILE | tr ";" "\n")
 	do	
 		echo "downloading" "$i" 
-		axel -n "$THREADS" "$i" -o "$NAME"_"$INDEX".fastq.gz
-		#wget "$i" -O "$NAME"_"$INDEX".fastq.gz
+		#axel -n "$THREADS" "$i" -o "$NAME"_"$INDEX".fastq.gz
+		wget "$i" -O "$NAME"_"$INDEX".fastq.gz
 		INDEX=$((INDEX + 1))
 	done
 
@@ -100,8 +107,8 @@ then # paired end
 		# calculate insert size metrics
         	java -jar $PICARD CollectInsertSizeMetrics \
         	I="$NAME"_gen.sam \
-        	O="$OUT_DIR"/"$NAME"_metrics.txt \
-        	H="$NAME"_histogram.pdf \
+        	O="$OUT_DIR"/other/"$NAME"_metrics.txt \
+        	H="$OUT_DIR"/other/"$NAME"_histogram.pdf \
         	M=0.5
 
 		# parse insert size matrics
@@ -132,9 +139,9 @@ then # paired end
 else # single end 
 	# Download file
 	echo "downloading" "$FILE"	
-	axel -n "$THREADS" "$FILE" -o "$NAME".fastq.gz
-	#wget "$FILE" -O "$NAME".fastq.gz
-	
+	#axel -n "$THREADS" "$FILE" -o "$NAME".fastq.gz
+	wget "$FILE" -O "$NAME".fastq.gz
+
 	# check MD5sum
 	MD5SUMS=$(head -n "$2" $SEQ_LIST | tail -n 1 | cut -f4)
 	if [ -z "$MD5SUMS" ]
@@ -200,18 +207,18 @@ fi
 if [ -n "$REF_GENOME" ] 
 then 
 samtools view -bS "$NAME"_gen.sam | samtools sort -T temp_Pt - -o "$NAME"_gen.bam
-samtools flagstat "$NAME"_gen.bam > $OUT_DIR/"$NAME"_gen_mapstats.txt
+samtools flagstat "$NAME"_gen.bam > $OUT_DIR/other/"$NAME"_gen_mapstats.txt
 samtools index "$NAME"_gen.bam
 
 # calculate coverage of ref per base and in 1kb windows
 echo "calculating coverage with mosdepth..."
-mosdepth -t "$THREADS" -b 1000 "$OUT_DIR"/"$NAME" "$NAME"_gen.bam
+mosdepth -t "$THREADS" -b 1000 "$OUT_DIR"/coverage/"$NAME" "$NAME"_gen.bam
 fi 
 
 if [ -n "$O_GENOME" ]
 then 
 samtools view -bS "$NAME"_org.sam | samtools sort -T temp_Pt - -o "$NAME"_org.bam
-samtools flagstat "$NAME"_org.bam > $OUT_DIR/"$NAME"_org_mapstats.txt
+samtools flagstat "$NAME"_org.bam > "$OUT_DIR"/other/mapstats/"$NAME"_org_mapstats.txt
 
 echo "extracting unmapped reads..."
 samtools view -f4 -b "$NAME"_org.bam > "$NAME".unmapped.bam
@@ -223,7 +230,7 @@ fi
 # Count K-mers in reads that did not map to organelles 
 echo "counting K-mers with jellyfish"
 jellyfish count -C -m "$K" -s 500M -t "$THREADS" -o "$NAME".jf "$NAME".unmapped.fq 
-jellyfish dump -tc "$NAME".jf | gzip > $OUT_DIR/"$NAME".txt.gz
+jellyfish dump -tc "$NAME".jf | gzip > $OUT_DIR/kmer_counts/"$NAME".txt.gz
 
 # Repeat Assembly with REPdenovo
 if [[ $REP_ASSEM = "yes" ]]
@@ -242,7 +249,7 @@ then
 
 	# save results
 	gzip contigs.fa
-	mv contigs.fa.gz "$OUT_DIR"/"$NAME"_contigs.fa.gz
+	mv contigs.fa.gz "$OUT_DIR"/assemblies/"$NAME"_contigs.fa.gz
 fi
 
 # Delete temp folder (if enabled)

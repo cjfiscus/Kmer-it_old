@@ -1,7 +1,7 @@
 ## Kmer-it Parameters
 
 # list of sequences to use
-SEQ_LIST=/rhome/cfisc004/bigdata/projects/Kmer-it/sample.txt
+SEQ_LIST=/bigdata/koeniglab/ktrimble/Kmer-it/sample_copy.txt
 
 # threads to use
 THREADS=2
@@ -10,10 +10,10 @@ THREADS=2
 TEMP_DIR=./temp
 
 # delete temporary directory?
-RM_TEMP_DIR=yes
+RM_TEMP_DIR=no
 
 # results directory
-OUT_DIR=/rhome/cfisc004/bigdata/projects/Kmer-it/results
+OUT_DIR=/bigdata/koeniglab/ktrimble/Kmer-it/results
 
 # trimming options
 RUN_TRIM=yes
@@ -21,15 +21,15 @@ ADAPTERSPE=/rhome/cfisc004/software/Trimmomatic-0.36/adapters/PE_all.fa
 ADAPTERSSE=/rhome/cfisc004/software/Trimmomatic-0.36/adapters/SE_all.fa
 
 # reference genome (use blank if not using)
-REF_GENOME=/rhome/cfisc004/bigdata/projects/K-mers_Arabidopsis/data/reference/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+REF_GENOME=
 
 # organellar genome (use blank if not using)
-O_GENOME=/rhome/cfisc004/bigdata/projects/K-mers_Arabidopsis/data/reference/Arabidopsis_thaliana.TAIR10.Mt.Pt.fa
+# O_GENOME=/rhome/cfisc004/bigdata/projects/K-mers_Arabidopsis/data/reference/Arabidopsis_thaliana.TAIR10.Mt.Pt.fa
 
 # kmer to count
 K=12
 
 # do repeat assembly
-REP_ASSEM=yes
+REP_ASSEM=no
 REPDENOVO=/rhome/cfisc004/software/REPdenovo/main.py
 REP_CONFIG=/rhome/cfisc004/bigdata/projects/Kmer-it/configure

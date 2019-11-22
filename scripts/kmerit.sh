@@ -16,7 +16,7 @@ echo "$NAME"
 FILE=$(head -n "$2" "$SEQ_LIST" | tail -n 1 | cut -f3)
 echo "$FILE"
 
-# Organeller genome
+# Organellar genome
 O_GENOME=$(head -n "$2" "$SEQ_LIST" | tail -n 1 | cut -f5)
 echo "$O_GENOME"
 
@@ -30,7 +30,7 @@ fi
 
 # work in temp directory
 TEMP_DIR="$TEMP_DIR"/"$NAME"
-mkdir "$TEMP_DIR"
+mkdir -v "$TEMP_DIR"
 cd "$TEMP_DIR"
 
 if [ $LIBTYPE == "PE" ]
@@ -40,7 +40,6 @@ then # paired end
 	for i in $(echo $FILE | tr ";" "\n")
 	do	
 		echo "downloading" "$i" 
-		# axel -n "$THREADS" "$i" -o "$NAME"_"$INDEX".fastq.gz
 		wget "$i" -O "$NAME"_"$INDEX".fastq.gz
 		INDEX=$((INDEX + 1))
 	done
@@ -88,39 +87,6 @@ then # paired end
 		mv "$NAME"_2.fastq.gz "$NAME"_2_trimmed_paired.fq.gz
 	fi
 
-	if [ -z "$REF_GENOME" ]
-	then 
-		echo "No mapping to reference genome"
-
-	else
-		# map to reference genome
-		echo "mapping to genome with bwa..."
-		bwa mem -t "$THREADS" -M $REF_GENOME "$NAME"_1_trimmed_paired.fq.gz \
-			"$NAME"_2_trimmed_paired.fq.gz > "$NAME"_gen.sam
-	fi 
-		
-	if [[ $REP_ASSEM = "yes" ]]
-	then 
-		# calculate insert size metrics
-        	java -jar $PICARD CollectInsertSizeMetrics \
-        	I="$NAME"_gen.sam \
-        	O="$OUT_DIR"/"$NAME"_metrics.txt \
-        	H="$NAME"_histogram.pdf \
-        	M=0.5
-
-		# parse insert size matrics
-       		MEAN_INSERT_SIZE=$(head -n 8 "$OUT_DIR"/"$NAME"_metrics.txt | tail -n 1 | cut -f6)
-        	STD_INSERT_SIZE=$(head -n 8 "$OUT_DIR"/"$NAME"_metrics.txt | tail -n 1 | cut -f7)
-
-        	# prepare REPdenovo inputs
-        	touch reads
-        	echo "$NAME"_1.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
-        	echo "$NAME"_2.fastq.gz 1 $(echo "$MEAN_INSERT_SIZE" | awk '{print int($1+0.5)}') $(echo "$STD_INSERT_SIZE" | awk '{print int($1+0.5)}') >> reads
-        
-        	LEN=$(zless "$NAME"_1_trimmed_paired.fq.gz | head -n2 | tail -n 1 | wc -m | awk '{print $1 - 1}')
-
-	fi 
-
 	if [ -z "$O_GENOME" ]
 	then 
 		echo "No mapping to organellar genome"
@@ -137,7 +103,6 @@ then # paired end
 else # single end 
 	# Download file
 	echo "downloading" "$FILE"	
-	#axel -n "$THREADS" "$FILE" -o "$NAME".fastq.gz
 	wget "$FILE" -O "$NAME".fastq.gz
 	
 	# check MD5sum
@@ -173,22 +138,6 @@ else # single end
 		mv "$NAME".fastq.gz "$NAME"_trimmed.fq.gz
 	fi
 
-	if [ -z "$REF_GENOME" ]
-	then
-		echo "No mapping to reference genome"
-	else
-		# map to reference genome
-		echo "mapping to genome with bwa..."
-		bwa mem -t "$THREADS" -M $REF_GENOME "$NAME"_trimmed.fq.gz  > "$NAME"_gen.sam
-	fi 
-
-	if [[ $REP_ASSEM = "yes" ]]
-	then 
-		touch reads
-		echo "$NAME".fastq.gz -1 -1 -1 >> reads
-		LEN=$(zless "$NAME".fastq.gz | head -n2 | tail -n 1 | wc -m | awk '{print $1 - 1}')
-	fi 
-
 	if [ -z "$O_GENOME" ]
 	then
 		echo "No mapping to organellar genome" 
@@ -202,17 +151,6 @@ else # single end
 fi
 
 # sam to sorted bam
-if [ -n "$REF_GENOME" ] 
-then 
-samtools view -bS "$NAME"_gen.sam | samtools sort -T temp_Pt - -o "$NAME"_gen.bam
-samtools flagstat "$NAME"_gen.bam > $OUT_DIR/"$NAME"_gen_mapstats.txt
-samtools index "$NAME"_gen.bam
-
-# calculate coverage of ref per base and in 1kb windows
-echo "calculating coverage with mosdepth..."
-mosdepth -t "$THREADS" -b 1000 "$OUT_DIR"/"$NAME" "$NAME"_gen.bam
-fi 
-
 if [ -n "$O_GENOME" ]
 then 
 samtools view -bS "$NAME"_org.sam | samtools sort -T temp_Pt - -o "$NAME"_org.bam
@@ -230,25 +168,6 @@ echo "counting K-mers with jellyfish"
 jellyfish count -C -m "$K" -s 500M -t "$THREADS" -o "$NAME".jf "$NAME".unmapped.fq 
 jellyfish dump -tc "$NAME".jf | gzip > $OUT_DIR/"$NAME".txt.gz
 
-# Repeat Assembly with REPdenovo
-if [[ $REP_ASSEM = "yes" ]]
-then 
-	echo "assembling repeats with REPdenovo"
-	# make config file for REPdenovo
-	touch configure
-	head -n 7 "$REP_CONFIG" >> configure
-	echo READ_LENGTH "$LEN" >> configure
-	tail -n+9 "$REP_CONFIG" >> configure
-	echo "OUTPUT_FOLDER ./" >> configure
-	echo "VERBOSE 1" >> configure
-
-	# Run REPdenovo pipeline
-	python2 "$REPDENOVO" -c All -g configure -r reads
-
-	# save results
-	gzip contigs.fa
-	mv contigs.fa.gz "$OUT_DIR"/"$NAME"_contigs.fa.gz
-fi
 
 # Delete temp folder (if enabled)
 if [[ $RM_TEMP_DIR = "yes" ]]

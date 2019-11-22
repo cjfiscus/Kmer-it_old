@@ -4,24 +4,28 @@ A pipeline for counting K-mers from high-throughput sequencing reads.
 This pipeline is designed to count k-mers from reads originating from nuclear genomes. Reads originating from organellar genomes are filtered by mapping all reads to supplied organellar genome(s) and only counting k-mers in unmapped reads.  
 
 Pipeline steps: 
-1. Download sequencing reads with axel. 
+1. Download sequencing reads. 
 2. MD5SUM check for file integrity. 
 3. Trim reads with trimmomatic. 
-4. Map to reference genome. 
-5. Map to organellar genome(s).
-6. Calculate coverage with mosdepth (if reference genome is provided).
-7. Extract unmapped reads (if organelle genome is provided)
-8. Count K-mers with jellyfish. 
-9. Repeat assembly with REPdenovo (reference genome must be provided). 
+4. Map to organellar genome(s), if provided.
+5. Extract unmapped reads (if organelle genome is provided)
+6. Count K-mers with jellyfish. 
 
 ## Dependencies
-#### [axel 2.16.1](https://github.com/axel-download-accelerator/axel)
 #### [hstlib/samtools 1.9](https://github.com/samtools/samtools)
 #### [trimmomatic 0.36](http://www.usadellab.org/cms/index.php?page=trimmomatic)
 #### [bedtools 2.28.0](https://github.com/arq5x/bedtools2)
 #### [jellyfish 2.2.29](https://github.com/gmarcais/Jellyfish)
 #### [bwa 0.7.17](https://github.com/lh3/bwa)
-#### [REPdenovo](https://github.com/Reedwarbler/REPdenovo)
+#### wget (must be installed manually on MacOS, can be done with homebrew or similar)
+
+## Setup 
+1. Clone this github repository. 
+2. Ensure that dependencies are installed (see above). 
+3. Run dl_org_gens.sh to download RefSeq Organellar Genomes from NCBI Organellar Genome Database.
+```
+sh scripts/dl_org_gens.sh dir/org_gens.fa
+```
 
 ## Inputs
 ### Parameter file
@@ -36,12 +40,8 @@ OUT_DIR: Directory where results will be stored.
 RUN_TRIM: Set to yes to run trimmomatic step.  
 ADAPTERSPE: Path to file containing paired-end adapters.   
 ADAPTERSSE: Path to file containing single-end adapters.  
-REF_GENOME: Path to reference genome. Leave blank to skip mapping to reference genome.  
 O_GENOME: Path to organellar genome (mitochondria and/or plastid genomes). Leave blank to skip mapping to organellar genome.  
 K: Kmer to count (must be integer).  
-REP_ASSEM: Set to yes to do repeat assembly with REPdenovo.  
-REPDENOVO: Path to REPdenovo script (main.py).  
-REP_CONFIG: Path to REPdenovo configuration file.  
 
 ### Sample file
 Kmer-it requires a file describing the samples to process. Each sequencing run is described on one line. The file must be tab-delimited and contain the following columns (in order):
@@ -58,17 +58,16 @@ Running Kmer-it consists of two steps.
 
 1. Count K-mers
 ```
-sh kmerit.sh params #
+sh scripts/kmerit.sh params #
 ```
 where params is the parameter file and # is the line to process in the sample file (starts at 2 since 1 is the header).  
 
 2. Aggregate multiple runs (skip if each sample is only sequenced with one run). 
 ```
-sh combine.sh
+sh scripts/combine.sh
 ```
 ## Outputs
 The following files are created:
 
 ## TODO
 [ ] Remove temp directory switch
-[ ] Test repeat assembly

@@ -29,4 +29,3 @@ do
 	rm temp.txt
 	rm $(sed 's/$/.txt.gz/g' <<< "$FILES")
 done 
-

@@ -29,6 +29,9 @@ TEMP_DIR="$TEMP_DIR"/"$NAME"
 mkdir "$TEMP_DIR"
 cd "$TEMP_DIR"
 
+# make outdir for mapstats
+mkdir "$OUT_DIR"/mapstats
+
 if [ $LIBTYPE == "PE" ]
 then # paired end 
         # Download files
@@ -149,7 +152,7 @@ fi
 if [ -n "$O_GENOME" ]
 then 
 samtools view -bS "$NAME"_org.sam | samtools sort -T temp_Pt - -o "$NAME"_org.bam
-samtools flagstat "$NAME"_org.bam > $OUT_DIR/"$NAME"_org_mapstats.txt
+samtools flagstat "$NAME"_org.bam > $OUT_DIR/mapstats/"$NAME"_org_mapstats.txt
 
 echo "extracting unmapped reads..."
 samtools view -f4 -b "$NAME"_org.bam > "$NAME".unmapped.bam

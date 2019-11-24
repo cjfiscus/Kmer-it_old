@@ -16,10 +16,6 @@ echo "$NAME"
 FILE=$(head -n "$2" "$SEQ_LIST" | tail -n 1 | cut -f3)
 echo "$FILE"
 
-# Organellar genome
-O_GENOME=$(head -n "$2" "$SEQ_LIST" | tail -n 1 | cut -f5)
-echo "$O_GENOME"
-
 if [[ "$FILE" == *";"* ]] ; then
         echo "PE library detected"
 	LIBTYPE="PE" # paired end
@@ -30,7 +26,7 @@ fi
 
 # work in temp directory
 TEMP_DIR="$TEMP_DIR"/"$NAME"
-mkdir -v "$TEMP_DIR"
+mkdir "$TEMP_DIR"
 cd "$TEMP_DIR"
 
 if [ $LIBTYPE == "PE" ]
@@ -95,7 +91,6 @@ then # paired end
 	else
 		# map to organellar genome
 		echo "mapping to organellar genome with bwa..."
-		bwa index "$O_GENOME"
 		bwa mem -t "$THREADS" -M $O_GENOME "$NAME"_1_trimmed_paired.fq.gz \
 			"$NAME"_2_trimmed_paired.fq.gz > "$NAME"_org.sam
 	fi

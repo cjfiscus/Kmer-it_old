@@ -26,7 +26,7 @@ fi
 
 # work in temp directory
 TEMP_DIR="$TEMP_DIR"/"$NAME"
-mkdir "$TEMP_DIR"
+mkdir -pv "$TEMP_DIR"
 cd "$TEMP_DIR"
 
 # make outdir for mapstats
@@ -126,7 +126,7 @@ else # single end
 	then 
 		# Quality/Adapter trimming
 		echo "trimming with trimmomatic..."
-		java -jar $TRIMMOMATIC SE -threads 8 \
+		java -jar $TRIMMOMATIC SE -threads $THREADS \
 		"$NAME".fastq.gz "$NAME"_trimmed.fq.gz \
 		ILLUMINACLIP:"$ADAPTERSSE":2:30:10 \
 		LEADING:5 TRAILING:5 SLIDINGWINDOW:4:20 MINLEN:36

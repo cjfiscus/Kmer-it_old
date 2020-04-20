@@ -14,8 +14,8 @@ Pipeline steps:
 ## Dependencies
 #### [hstlib/samtools 1.9](https://github.com/samtools/samtools)
 #### [trimmomatic 0.36](http://www.usadellab.org/cms/index.php?page=trimmomatic)
-#### [bedtools 2.28.0](https://github.com/arq5x/bedtools2)
-#### [jellyfish 2.2.29](https://github.com/gmarcais/Jellyfish)
+#### [bedtools 2.29.2](https://github.com/arq5x/bedtools2)
+#### [jellyfish 2.2.9](https://github.com/gmarcais/Jellyfish)
 #### [bwa 0.7.17](https://github.com/lh3/bwa)
 #### wget (must be installed manually on MacOS, can be done with homebrew or similar)
 
@@ -54,8 +54,6 @@ FTP: FTP link(s) for file download. Paired-end reads must be contained in separa
 MD5: MD5SUMS for file(s) described in FTP field. If no MD5SUMS are provided this step will be skipped.  
 
 ## Usage
-Running Kmer-it consists of two steps. 
-
 1. Count K-mers
 ```
 sh scripts/kmerit.sh params #
@@ -66,8 +64,27 @@ where params is the parameter file and # is the line to process in the sample fi
 ```
 sh scripts/combine.sh
 ```
+
+3. Combine K-mer counts into table. Set DIR to folder where individual K-mer count files are stored. 
+```
+sbatch 2_mk_count_table.sh ./DIR ./OUT.TBL
+```
+
+4. Annotate table with GC content of K-mers in first column.  Run in python3. 
+```
+RAWCOUNTS=INPUT.TBL
+ANNOTCOUNTS=OUTPUT.TBL
+paste <(python 3_annot_mers_gc.py <(cut -f1 "$RAWCOUNTS") | cut -f1) "$RAWCOUNTS" > "$ANNOTCOUNTS" 
+```
+
+5. Do GC + TMM count normalization. 
+```
+sbatch 4_normalize.sh ./IN.TBL ./OUT.TBL
+```
+
 ## Outputs
 The following files are created:
 
 ## TODO
 [ ] Remove temp directory switch
+[ ] Combine gc annotation + normalization step
